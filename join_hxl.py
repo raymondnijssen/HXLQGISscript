@@ -1,13 +1,14 @@
 ##Join HXL file=name
 ##adm=vector
 ##adm_field=field adm 
-##hxl_loc=longstring https://proxy.hxlstandard.org/data.csv?url=https%3A//data.humdata.org/dataset/3cb60971-0dc7-4743-a7ae-e65744b2dbba/resource/968202f1-856a-4906-ae87-c730e9b1dd27/download/PHL_haima_houses_damaged_pcoded_ndrrmc_sitrep_9_20161025.csv
+#hxl_loc=longstring https://proxy.hxlstandard.org/data.csv?url=https%3A//data.humdata.org/dataset/3cb60971-0dc7-4743-a7ae-e65744b2dbba/resource/968202f1-856a-4906-ae87-c730e9b1dd27/download/PHL_haima_houses_damaged_pcoded_ndrrmc_sitrep_9_20161025.csv
 #hxl_loc=longstring https://proxy.hxlstandard.org/data.json?url=https%3A//data.humdata.org/dataset/3cb60971-0dc7-4743-a7ae-e65744b2dbba/resource/968202f1-856a-4906-ae87-c730e9b1dd27/download/PHL_haima_houses_damaged_pcoded_ndrrmc_sitrep_9_20161025.csv
+##hxl_loc=longstring https://proxy.hxlstandard.org/data/z82Fye/download/data.csv
 ##hxl_field_name=string mun_code
-##hxl_field_select=selection other;#mun_code;#adm2+code;#adm3+code
+#hxl_field_select=selection other;#mun_code;#adm2+code;#adm3+code;pcode
 ##do_log=boolean True
 
-hxl_field_select_lookup = 'other;#mun_code;#adm2+code;#adm3+code'.split(';')
+hxl_field_select_lookup = 'other;#mun_code;#adm2+code;#adm3+code;#pcode'.split(';')
 
 from qgis.core import QgsMessageLog, QgsMapLayerRegistry, QgsVectorJoinInfo
 import urllib2
@@ -15,10 +16,9 @@ from PyQt4.QtCore import *
 #from qgis.gui import *
 from qgis.utils import iface
 import time
+import tempfile
+import os
 
-#from shapely.geometry import Polygon, MultiPolygon
-#from shapely.wkb import loads
-#from shapely.wkt import dumps
 
 def log(m):
     if do_log:
@@ -71,8 +71,11 @@ geo_layer = processing.getObject(adm)
 #log(hxl_loc)
 
 #find hxl fieldname
-if not hxl_field_select_lookup[hxl_field_select] == 'other':
-    hxl_field_name = hxl_field_select_lookup[hxl_field_select]
+if 'hxl_field_select' in globals():
+    if not hxl_field_select_lookup[hxl_field_select] == 'other':
+        hxl_field_name = hxl_field_select_lookup[hxl_field_select]
+    else:
+        hxl_field_name = hxl_field_select
 
 
 
@@ -81,7 +84,7 @@ log(data_type)
 
 # download
 progress.setText('Downloading data...')
-temp_fn = '/home/raymond/tmp/hxl.csv'
+temp_fn = os.path.join(tempfile.gettempdir(), 'hxl.csv')
 
 download_succes = download_file(hxl_loc, temp_fn)
 if download_succes:
@@ -136,7 +139,6 @@ geo_layer.addJoin(joinInfo)
 
 #update display
 zoom_and_redraw(geo_layer)
-
 
 
 
